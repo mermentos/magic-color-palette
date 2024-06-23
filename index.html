@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Magic Color Palette Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --secondary-color: #4f46e5;
+            --background-color: #f9fafb;
+            --text-color: #111827;
+            --secondary-text: #6b7280;
+            --card-background: #ffffff;
+            --border-color: #e5e7eb;
+        }
+
+        [data-theme="dark"] {
+            --background-color: #1f2937;
+            --text-color: #f3f4f6;
+            --secondary-text: #d1d5db;
+            --card-background: #374151;
+            --border-color: #4b5563;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.5;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem 0;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .theme-switch {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+
+        .hero {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 4rem 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 80%);
+            animation: pulse 15s linear infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: translate(0, 0);
+            }
+            100% {
+                transform: translate(-50px, -50px);
+            }
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .color-input {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            position: relative;
+            flex-wrap: wrap;
+        }
+
+        .color-picker-wrapper {
+            position: relative;
+            width: 60px;
+            height: 60px;
+        }
+
+        input[type="color"] {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            background: none;
+            -webkit-appearance: none;
+            opacity: 0;
+        }
+
+        .color-preview {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+        }
+
+        input[type="text"], select {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 25px;
+            font-size: 1rem;
+            width: 200px;
+            background-color: var(--card-background);
+            color: var(--text-color);
+        }
+
+        button {
+            background-color: white;
+            color: var(--primary-color);
+            border: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        button:hover {
+            background-color: var(--background-color);
+            transform: translateY(-2px);
+        }
+
+        .palette-display {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+            position: relative;
+            flex-wrap: wrap;
+        }
+
+        .color-swatch {
+            width: 100px;
+            height: 100px;
+            border-radius: 12px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding: 0.5rem;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .color-swatch:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .color-code {
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            color: #333;
+        }
+
+        .preset-palettes {
+            background-color: var(--card-background);
+            padding: 4rem 0;
+            margin-top: 0; /* Adjusted margin */
+        }
+
+        .preset-palettes h2 {
+            text-align: center;
+            margin-bottom: 2rem;
+            font-size: 2rem;
+        }
+
+        .theme-categories {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .theme-category {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .theme-category:hover,
+        .theme-category.active {
+            background-color: var(--secondary-color);
+        }
+
+        .theme-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .theme-item {
+            background-color: var(--card-background);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .theme-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .theme-colors {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .theme-color {
+            width: 20px;
+            height: 20px;
+            margin: 0 2px;
+        }
+
+        .theme-name {
+            font-size: 0.8rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .about-section {
+            padding: 6rem 0;
+            background-color: var(--background-color);
+        }
+
+        .about-section h2 {
+            text-align: center;
+            margin-bottom: 3rem;
+            font-size: 2rem;
+        }
+
+        .benefits {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .benefit {
+            background-color: var(--card-background);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+            text-align: center;
+        }
+
+        .benefit:hover {
+            transform: translateY(-5px);
+        }
+
+        .benefit i {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+        }
+
+        .benefit h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        footer {
+            background-color: var(--primary-color);
+            color: white;
+            text-align: center;
+            padding: 2rem 0;
+            margin-top: 4rem;
+        }
+
+        @media (max-width: 768px) {
+            .color-input {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .palette-display {
+                flex-wrap: wrap;
+            }
+
+            .color-swatch {
+                width: calc(50% - 0.5rem);
+            }
+
+            select {
+                width: 100%;
+            }
+
+            .theme-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            }
+        }
+
+        #notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0.75rem 1rem;
+            border-radius: 4px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="container">
+            <div class="logo">ChromaSync</div>
+            <button class="theme-switch" id="theme-switch">
+                <i class="fas fa-moon"></i>
+            </button>
+        </nav>
+    </header>
+
+    <main>
+        <section id="home" class="hero">
+            <div class="container">
+                <h1>Explore Perfect Color Harmonies</h1>
+                <p>Create stunning color palettes for your brand or project</p>
+                <div class="color-input">
+                    <div class="color-picker-wrapper">
+                        <input type="color" id="color-picker" value="#6366f1">
+                        <div class="color-preview" id="color-preview"></div>
+                    </div>
+                    <input type="text" id="color-code" placeholder="#6366f1">
+                    <select id="palette-type">
+                        <option value="analogous">Analogous</option>
+                        <option value="monochromatic">Monochromatic</option>
+                        <option value="triadic">Triadic</option>
+                        <option value="complementary">Complementary</option>
+                        <option value="split-complementary">Split Complementary</option>
+                    </select>
+                    <button id="generate-palette">Generate Palette</button>
+                </div>
+                <div id="palette-display" class="palette-display"></div>
+            </div>
+        </section>
+
+        <section class="preset-palettes">
+            <div class="container">
+                <h2>Explore Prebuilt Palettes</h2>
+                <div class="theme-categories">
+                    <div class="theme-category active" data-category="occasions">Occasions</div>
+                    <div class="theme-category" data-category="feelings">Feelings</div>
+                    <div class="theme-category" data-category="nature">Nature</div>
+                    <div class="theme-category" data-category="concepts">Concepts</div>
+                </div>
+                <div class="theme-grid" id="theme-grid"></div>
+            </div>
+        </section>
+
+        <section class="about-section">
+            <div class="container">
+                <h2>The Power of Color in Branding</h2>
+                <div class="benefits">
+                    <div class="benefit">
+                        <i class="fas fa-bullseye"></i>
+                        <h3>Brand Consistency</h3>
+                        <p>Maintain a cohesive visual identity across all platforms and media.</p>
+                    </div>
+                    <div class="benefit">
+                        <i class="fas fa-heart"></i>
+                        <h3>Emotional Impact</h3>
+                        <p>Evoke specific emotions and associations in your audience.</p>
+                    </div>
+                    <div class="benefit">
+                        <i class="fas fa-eye"></i>
+                        <h3>Visual Harmony</h3>
+                        <p>Create aesthetically pleasing designs that capture attention.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2023 ChromaSync. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <div id="notification"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.4.2/chroma.min.js"></script>
+    <script>
+        const colorPicker = document.getElementById('color-picker');
+        const colorPreview = document.getElementById('color-preview');
+        const colorCode = document.getElementById('color-code');
+        const generatePaletteBtn = document.getElementById('generate-palette');
+        const paletteDisplay = document.getElementById('palette-display');
+        const paletteType = document.getElementById('palette-type');
+        const notification = document.getElementById('notification');
+        const themeSwitch = document.getElementById('theme-switch');
+        const themeGrid = document.getElementById('theme-grid');
+        const themeCategories = document.querySelectorAll('.theme-category');
+
+        function updateColorCode() {
+            colorCode.value = colorPicker.value;
+            colorPreview.style.backgroundColor = colorPicker.value;
+        }
+
+        function updateColorPicker() {
+            if (/^#[0-9A-F]{6}$/i.test(colorCode.value)) {
+                colorPicker.value = colorCode.value;
+                colorPreview.style.backgroundColor = colorCode.value;
+            }
+        }
+
+        function generatePalette() {
+            const baseColor = chroma(colorPicker.value);
+            let colors;
+
+            switch (paletteType.value) {
+                case 'analogous':
+                    colors = [
+                        baseColor.set('hsl.h', '-30'),
+                        baseColor.set('hsl.h', '-15'),
+                        baseColor,
+                        baseColor.set('hsl.h', '+15'),
+                        baseColor.set('hsl.h', '+30')
+                    ];
+                    break;
+                case 'monochromatic':
+                    colors = [
+                        baseColor.darken(2),
+                        baseColor.darken(1),
+                        baseColor,
+                        baseColor.brighten(1),
+                        baseColor.brighten(2)
+                    ];
+                    break;
+                case 'triadic':
+                    colors = [
+                        baseColor.set('hsl.h', '-120'),
+                        baseColor.set('hsl.h', '-60'),
+                        baseColor,
+                        baseColor.set('hsl.h', '+60'),
+                        baseColor.set('hsl.h', '+120')
+                    ];
+                    break;
+                case 'complementary':
+                    colors = [
+                        baseColor.darken(1),
+                        baseColor,
+                        baseColor.brighten(1),
+                        baseColor.set('hsl.h', '+180').darken(1),
+                        baseColor.set('hsl.h', '+180')
+                    ];
+                    break;
+                case 'split-complementary':
+                    colors = [
+                        baseColor,
+                        baseColor.set('hsl.h', '+150'),
+                        baseColor.set('hsl.h', '+210'),
+                        baseColor.set('hsl.h', '-30'),
+                        baseColor.set('hsl.h', '+30')
+                    ];
+                    break;
+            }
+
+            updatePaletteDisplay(colors);
+        }
+
+        function updatePaletteDisplay(colors) {
+            paletteDisplay.innerHTML = '';
+            colors.forEach(color => {
+                const swatch = document.createElement('div');
+                swatch.className = 'color-swatch';
+                swatch.style.backgroundColor = color.hex();
+
+                const colorCodeDisplay = document.createElement('span');
+                colorCodeDisplay.className = 'color-code';
+                colorCodeDisplay.textContent = color.hex();
+
+                swatch.appendChild(colorCodeDisplay);
+                paletteDisplay.appendChild(swatch);
+
+                swatch.addEventListener('click', () => {
+                    navigator.clipboard.writeText(color.hex());
+                    showNotification(`Color ${color.hex()} copied to clipboard!`);
+                });
+            });
+        }
+
+        function showNotification(message) {
+            notification.textContent = message;
+            notification.style.opacity = 1;
+            setTimeout(() => {
+                notification.style.opacity = 0;
+            }, 2000);
+        }
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            if (html.getAttribute('data-theme') === 'light') {
+                html.setAttribute('data-theme', 'dark');
+                themeSwitch.innerHTML = '<i class="fas fa-sun"></i>';
+            } else {
+                html.setAttribute('data-theme', 'light');
+                themeSwitch.innerHTML = '<i class="fas fa-moon"></i>';
+            }
+        }
+
+        const presetPalettes = {
+            occasions: {
+                'Christmas (Traditional)': ['#BB2528', '#146B3A', '#F8B229', '#EA4630', '#FFFFFF'],
+                'Christmas (Modern)': ['#0F4C81', '#C41E3A', '#D8B74A', '#B2B2B2', '#F0F0F0'],
+                'Easter': ['#FF9AA2', '#FFB7B2', '#FFDAC1', '#E2F0CB', '#B5EAD7'],
+                'Halloween': ['#31263E', '#44355B', '#221E22', '#ECA72C', '#EE5622'],
+                'Thanksgiving': ['#5E503F', '#A9927D', '#F2F4F3', '#C49E85', '#49111C'],
+                'Valentine\'s Day': ['#F4C2C2', '#FF9999', '#FFFFFF', '#FFB3BA', '#FECBCE'],
+                'New Year\'s Eve': ['#091F36', '#3994FF', '#FFFFFF', '#FFD700', '#C0C0C0'],
+                'St. Patrick\'s Day': ['#006400', '#32CD32', '#FFFFFF', '#FFD700', '#228B22']
+            },
+            feelings: {
+                'Trust': ['#0077BE', '#4682B4', '#5F9EA0', '#6495ED', '#87CEEB'],
+                'Excitement': ['#FF4500', '#FF6347', '#FF7F50', '#FFA07A', '#FFD700'],
+                'Calm': ['#E6E6FA', '#F0F8FF', '#F0FFFF', '#F5FFFA', '#FFFAF0'],
+                'Luxury': ['#2C3E50', '#34495E', '#85929E', '#D5D8DC', '#CACFD2'],
+                'Energy': ['#FF5733', '#C70039', '#FFC300', '#DAF7A6', '#FF3333'],
+                'Creativity': ['#FF61D2', '#7D3AC1', '#DB3EB1', '#41506B', '#44D9E8'],
+                'Wisdom': ['#4B0082', '#8A2BE2', '#9370DB', '#E6E6FA', '#F8F8FF'],
+                'Serenity': ['#ADD8E6', '#E6E6FA', '#F0F8FF', '#F0FFFF', '#F5FFFA']
+            },
+            nature: {
+                'Forest': ['#228B22', '#006400', '#8FBC8F', '#20B2AA', '#3CB371'],
+                'Ocean': ['#000080', '#0000FF', '#4169E1', '#1E90FF', '#87CEEB'],
+                'Desert': ['#F4A460', '#D2691E', '#CD853F', '#DEB887', '#FFDAB9'],
+                'Mountain': ['#4682B4', '#5F9EA0', '#B0C4DE', '#708090', '#778899'],
+                'Tropical': ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FDCB6E', '#FF8A5B'],
+                'Autumn': ['#8B4513', '#CD853F', '#D2691E', '#DEB887', '#F4A460'],
+                'Spring Bloom': ['#FF69B4', '#FFB6C1', '#FFA07A', '#98FB98', '#87CEFA'],
+                'Arctic': ['#F0FFFF', '#E0FFFF', '#00CED1', '#48D1CC', '#40E0D0']
+            },
+            concepts: {
+                'Minimalist': ['#FFFFFF', '#F5F5F5', '#EBEBEB', '#BFBFBF', '#000000'],
+                'Vintage': ['#8B4513', '#CD853F', '#D2691E', '#DEB887', '#F4A460'],
+                'Futuristic': ['#1A1A2E', '#16213E', '#0F3460', '#E94560', '#533483'],
+                'Earthy': ['#8B4513', '#CD853F', '#D2691E', '#DEB887', '#F4A460'],
+                'Pastel': ['#FFB6C1', '#FFD700', '#98FB98', '#87CEFA', '#DDA0DD'],
+                'Neon': ['#FF00FF', '#00FFFF', '#39FF14', '#FFFF00', '#FF3131'],
+                'Monochrome': ['#000000', '#333333', '#666666', '#999999', '#CCCCCC'],
+                'Cyberpunk': ['#F0FF00', '#000000', '#7B00FF', '#0E0068', '#00FFFF']
+            }
+        };
+
+        function createThemeGrid(category) {
+            themeGrid.innerHTML = '';
+            Object.entries(presetPalettes[category]).forEach(([name, colors]) => {
+                const themeItem = document.createElement('div');
+                themeItem.className = 'theme-item';
+                
+                const themeColors = document.createElement('div');
+                themeColors.className = 'theme-colors';
+                colors.forEach(color => {
+                    const colorDiv = document.createElement('div');
+                    colorDiv.className = 'theme-color';
+                    colorDiv.style.backgroundColor = color;
+                    themeColors.appendChild(colorDiv);
+                });
+                
+                const themeName = document.createElement('div');
+                themeName.className = 'theme-name';
+                themeName.textContent = name;
+                
+                themeItem.appendChild(themeColors);
+                themeItem.appendChild(themeName);
+                themeGrid.appendChild(themeItem);
+
+                themeItem.addEventListener('click', () => {
+                    updatePaletteDisplay(colors.map(color => chroma(color)));
+                });
+            });
+        }
+
+        themeCategories.forEach(category => {
+            category.addEventListener('click', () => {
+                themeCategories.forEach(c => c.classList.remove('active'));
+                category.classList.add('active');
+                createThemeGrid(category.dataset.category);
+            });
+        });
+
+        colorPicker.addEventListener('input', updateColorCode);
+        colorCode.addEventListener('input', updateColorPicker);
+        generatePaletteBtn.addEventListener('click', generatePalette);
+        paletteType.addEventListener('change', generatePalette);
+        themeSwitch.addEventListener('click', toggleTheme);
+
+        // Initialize
+        updateColorCode();
+        generatePalette();
+        createThemeGrid('occasions');
+    </script>
+</body>
+</html>
